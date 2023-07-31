@@ -2,6 +2,7 @@ import { RobotCredentials } from "../client";
 import { useStore } from "../state";
 import React, { FC, useEffect, useState } from "react";
 import VideoStream from "./VideoStream";
+import HistoricalData from "./HistoricalData";
 
 const demo_robot = {
   name: "Demo Rover",
@@ -55,7 +56,9 @@ const DemoPage: FC<DemoPageProps> = (props) => {
           <VideoStream streamClient={streamClient} />
         </div>
       )}
-      <div className=""></div>
+      <div className="">
+        <HistoricalData />
+      </div>
     </div>
   );
 };

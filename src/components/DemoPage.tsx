@@ -6,8 +6,8 @@ import HistoricalData from "./HistoricalData";
 
 const demo_robot = {
   name: "Demo Rover",
-  hostname: "dashboard-rover-main.nw1175dvmu.viam.cloud",
-  secret: "j0eu0txhqx9csvgy05a49pn082etgb7qshw40w2lgpgttvbo",
+  hostname: process.env.REACT_APP_DEMO_BOT_HOSTNAME!,
+  secret: process.env.REACT_APP_DEMO_BOT_SECRET!,
 };
 
 interface DemoPageProps {
@@ -20,8 +20,8 @@ const DemoPage: FC<DemoPageProps> = (props) => {
 
   const handleConnectButton = () => {
     const demoRobotCredentials = {
-      hostname: "dashboard-rover-main.nw1175dvmu.viam.cloud",
-      secret: "j0eu0txhqx9csvgy05a49pn082etgb7qshw40w2lgpgttvbo",
+      hostname: demo_robot.hostname,
+      secret: demo_robot.secret,
     };
     connectOrDisconnect(demoRobotCredentials);
   };
@@ -56,7 +56,7 @@ const DemoPage: FC<DemoPageProps> = (props) => {
           <VideoStream streamClient={streamClient} />
         </div>
       )}
-      <div className="">
+      <div className="py-4">
         <HistoricalData />
       </div>
     </div>

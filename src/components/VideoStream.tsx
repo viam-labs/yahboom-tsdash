@@ -13,24 +13,34 @@ const VideoStream: FC<VideoStreamProps> = ({ streamClient }): JSX.Element => {
 
   useEffect(() => {
     console.log("stream", stream);
+    console.log(stream?.getVideoTracks());
     if (videoRef.current && stream) {
-      console.log("We have a stream");
+      console.log(`effect check :${videoRef.current && stream}`);
+      console.log(`video ref: ${videoRef.current}`);
+      console.log(`stream: ${stream}`);
       videoRef.current.srcObject = stream;
+      videoRef.current.play();
       setCount(count + 1); // hack to force a re-render when we have a video stream so the video element will show up
     } else {
-      console.log("We don't have a stream");
+      console.log(`video ref: ${videoRef.current}`);
+      console.log(`stream: ${stream}`);
+
+      setCount(count + 1); // hack to force a re-render when we don't have a video stream so the video element will disappear
     }
   }, [stream]);
 
   return (
     <div className="flex flex-col space-y-2 p-4">
-      <label>Camera Feed</label>
-      <video
-        className="border-2 border-gray-500"
-        ref={videoRef}
-        autoPlay
-        muted
-      />
+      <label>Camera Feed({count})</label>
+      {stream && (
+        <video
+          className="border-2 border-gray-500"
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+        ></video>
+      )}
     </div>
   );
 };

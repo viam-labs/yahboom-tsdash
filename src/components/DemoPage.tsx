@@ -2,7 +2,6 @@ import { RobotCredentials } from "../client";
 import { useStore } from "../state";
 import React, { FC, useEffect, useState } from "react";
 import VideoStream from "./VideoStream";
-import HistoricalData from "./HistoricalData";
 
 const demo_robot = {
   name: "Demo Rover",
@@ -27,13 +26,8 @@ const DemoPage: FC<DemoPageProps> = (props) => {
   };
 
   return (
-    <div className="w-full h-screen border border-red-500 flex flex-col items-center justify-start">
-      <div className="py-8 md:py-12 lg:py-16">
-        <h1 className="font-semibold text-2xl">
-          Viam TypeScript / React Dashboard Demo
-        </h1>
-      </div>
-      <div className="border border-gray-700 p-4 flex flex-col space-y-4">
+    <div className="w-full h-screen border border-gray-300 flex flex-col items-center justify-start">
+      {/* <div className="border border-gray-700 p-4 flex flex-col space-y-4">
         <div className="">
           <h1 className="font-medium">Robot Overview</h1>
           <div className="">
@@ -50,15 +44,15 @@ const DemoPage: FC<DemoPageProps> = (props) => {
             ? "Disconnect"
             : "Connect"}
         </button>
-      </div>
-      {streamClient && (
+      </div> */}
+      {/* {streamClient && (
         <div className="">
           <VideoStream streamClient={streamClient} />
         </div>
       )}
       <div className="py-4">
         <HistoricalData />
-      </div>
+      </div> */}
     </div>
   );
 };

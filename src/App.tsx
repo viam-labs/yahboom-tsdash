@@ -1,10 +1,14 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import DemoPage from "./components/DemoPage";
+import ViamDashboard from "./components/ViamDashboard";
 
 function App() {
-  return <DemoPage />;
+  return (
+    <div className="p-8">
+      <ViamDashboard />
+    </div>
+  );
 }
 
 export default App;

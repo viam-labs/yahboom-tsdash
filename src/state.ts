@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { RobotClient, StreamClient, BaseClient } from "@viamrobotics/sdk";
 import {
   RobotCredentials,
@@ -85,35 +85,25 @@ export const useStream = (
   streamClient: StreamClient | undefined,
   cameraName: string
 ): MediaStream | undefined => {
-  const [streamLock, setStreamLock] = useState(false);
+  const okToConnectRef = useRef(true);
   const [stream, setStream] = useState<MediaStream | undefined>();
 
   useEffect(() => {
-    if (streamClient && !streamLock) {
-      console.log(
-        `Fetching stream for camera "${cameraName}" because streamLock is ${streamLock} and streamClient is ${JSON.stringify(
-          streamClient,
-          null,
-          2
-        )}`
-      );
+    if (streamClient && okToConnectRef.current) {
+      okToConnectRef.current = false;
 
-      setStreamLock(true);
-
-      getStream(streamClient, cameraName)
+      streamClient
+        .getStream(cameraName)
         .then((mediaStream) => setStream(mediaStream))
         .catch((error: unknown) => {
           console.warn(`Unable to connect to camera ${cameraName}`, error);
         });
 
       return () => {
-        setStreamLock(false);
+        okToConnectRef.current = true;
 
         streamClient.remove(cameraName).catch((error: unknown) => {
-          console.warn(
-            `Unable to disconnect to camera "${cameraName}". Caught the following error:`,
-            error
-          );
+          console.warn(`Unable to disconnect to camera ${cameraName}`, error);
         });
       };
     }

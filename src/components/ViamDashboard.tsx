@@ -195,7 +195,7 @@ const ViamDashboard = () => {
           <Tab>Historical Data</Tab>
         </TabList>
         <TabPanels>
-          <TabPanel className="flex flex-col space-y-8">
+          <TabPanel>
             <div className="mt-6 flex space-x-8 h-full w-full">
               {webcam_stream && (
                 <Card className="mt-8 ">
@@ -232,7 +232,7 @@ const ViamDashboard = () => {
                 </Card>
               )}
             </div>
-            <div className="">
+            <div className="mt-4">
               <OSModuleDash osData={osStats} />
             </div>
           </TabPanel>

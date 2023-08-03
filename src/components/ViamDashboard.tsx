@@ -17,6 +17,7 @@ import VideoStream from "./VideoStream";
 import GPSLocation from "./GPSLocation";
 import { GetPositionResponse } from "@viamrobotics/sdk";
 import { GPSPos } from "./GPSLocation";
+import OSModuleDash from "./OSModuleDash";
 
 const demo_robot = {
   name: "Demo Rover",
@@ -96,14 +97,17 @@ const ViamDashboard = () => {
         initialTimestamp = new Date(initialTimestamp.getTime() + interval);
       });
 
-      console.log("flattenedData");
-      console.log(flattenedData);
       setData(flattenedData);
     });
   }, []);
 
-  const { status, connectOrDisconnect, streamClient, gpsMovementSensorClient } =
-    useStore();
+  const {
+    status,
+    connectOrDisconnect,
+    streamClient,
+    gpsMovementSensorClient,
+    osStatsSensorClient,
+  } = useStore();
 
   const handleConnectButton = () => {
     const demoRobotCredentials = {
@@ -117,13 +121,12 @@ const ViamDashboard = () => {
   const realsense_stream = useStream(streamClient, "realsense-camera");
 
   const [gpsPosition, setGpsPosition] = useState<GPSPos | null>(null);
+  const [osStats, setOsStats] = useState<any | null>(null);
 
   useEffect(() => {
     gpsMovementSensorClient
       ?.getPosition()
       .then((data) => {
-        console.log("callback 2!");
-        console.log(data);
         //@ts-ignore
         setGpsPosition({
           altitudeM: data.altitudeM,
@@ -135,13 +138,17 @@ const ViamDashboard = () => {
         return data;
       })
       .catch((err) => {
-        console.log("error 2!");
+        console.log("error in getting gps position");
         console.log(err);
       });
-
-    console.log("gpsPosition");
-    console.log(gpsPosition);
   }, [status]);
+
+  useEffect(() => {
+    osStatsSensorClient?.getReadings().then((data) => {
+      console.log(JSON.stringify(data, null, 2));
+      setOsStats(data);
+    });
+  }, [osStatsSensorClient]);
 
   return (
     <main>
@@ -188,10 +195,10 @@ const ViamDashboard = () => {
           <Tab>Historical Data</Tab>
         </TabList>
         <TabPanels>
-          <TabPanel>
+          <TabPanel className="flex flex-col space-y-8">
             <div className="mt-6 flex space-x-8 h-full w-full">
               {webcam_stream && (
-                <Card className="mt-8">
+                <Card className="mt-8 ">
                   <Title className="absolute -top-10 -left-0">
                     Webcam Stream
                   </Title>
@@ -225,7 +232,11 @@ const ViamDashboard = () => {
                 </Card>
               )}
             </div>
+            <div className="">
+              <OSModuleDash osData={osStats} />
+            </div>
           </TabPanel>
+
           <TabPanel>
             <Grid numItemsMd={2} numItemsLg={3} className="gap-6 mt-6">
               <Card>

@@ -13,6 +13,7 @@ import {
   getStreamClient,
   getGPSMovementSensorClient,
   getBaseClient,
+  getOSStatsSensorClient,
 } from "./client";
 
 export type ClientStatus = "disconnected" | "loading" | "connected";
@@ -22,6 +23,7 @@ export interface Store {
   client?: RobotClient;
   streamClient?: StreamClient;
   gpsMovementSensorClient?: MovementSensorClient;
+  osStatsSensorClient?: SensorClient;
   baseClient?: BaseClient;
   connectOrDisconnect: (credentials: RobotCredentials) => unknown;
 }
@@ -32,6 +34,7 @@ export const useStore = create<Store>((set, get) => ({
   streamClient: undefined,
   baseClient: undefined,
   gpsMovementSensorClient: undefined,
+  osStatsSensorClient: undefined,
   connectOrDisconnect: (credentials: RobotCredentials) => {
     const status = get().status;
     if (status === "disconnected") {
@@ -69,10 +72,20 @@ export const useStore = create<Store>((set, get) => ({
             )}`
           );
 
+          const osStatsSensorClient = getOSStatsSensorClient(client);
+          console.log(
+            `Received sensor client ${JSON.stringify(
+              osStatsSensorClient,
+              null,
+              2
+            )}`
+          );
+
           const stateUpdate = {
             status: "connected",
             client,
             gpsMovementSensorClient,
+            osStatsSensorClient,
             baseClient,
             streamClient,
           };

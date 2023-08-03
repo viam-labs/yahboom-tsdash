@@ -68,6 +68,16 @@ export const getGPSMovementSensorClient = (
 };
 
 /**
+ * OSStatsSensorClient factory
+ *
+ * @param client A connected RobotClient
+ * @returns A connected sensor client
+ */
+export const getOSStatsSensorClient = (client: RobotClient): SensorClient => {
+  return new SensorClient(client, "os-sensor");
+};
+
+/**
  * Get a stream by name from a StreamClient.
  *
  * @param streamClient - The connected StreamClient.

@@ -1,12 +1,18 @@
 import { create } from "zustand";
 import { useEffect, useRef, useState } from "react";
-import type { RobotClient, StreamClient, BaseClient } from "@viamrobotics/sdk";
+import type {
+  RobotClient,
+  StreamClient,
+  BaseClient,
+  SensorClient,
+  MovementSensorClient,
+} from "@viamrobotics/sdk";
 import {
   RobotCredentials,
   getRobotClient,
   getStreamClient,
+  getGPSMovementSensorClient,
   getBaseClient,
-  getStream,
 } from "./client";
 
 export type ClientStatus = "disconnected" | "loading" | "connected";
@@ -15,6 +21,7 @@ export interface Store {
   status: ClientStatus;
   client?: RobotClient;
   streamClient?: StreamClient;
+  gpsMovementSensorClient?: MovementSensorClient;
   baseClient?: BaseClient;
   connectOrDisconnect: (credentials: RobotCredentials) => unknown;
 }
@@ -24,6 +31,7 @@ export const useStore = create<Store>((set, get) => ({
   client: undefined,
   streamClient: undefined,
   baseClient: undefined,
+  gpsMovementSensorClient: undefined,
   connectOrDisconnect: (credentials: RobotCredentials) => {
     const status = get().status;
     if (status === "disconnected") {
@@ -51,9 +59,20 @@ export const useStore = create<Store>((set, get) => ({
           console.log(
             `Received base client ${JSON.stringify(baseClient, null, 2)}`
           );
+
+          const gpsMovementSensorClient = getGPSMovementSensorClient(client);
+          console.log(
+            `Received sensor client ${JSON.stringify(
+              gpsMovementSensorClient,
+              null,
+              2
+            )}`
+          );
+
           const stateUpdate = {
             status: "connected",
             client,
+            gpsMovementSensorClient,
             baseClient,
             streamClient,
           };

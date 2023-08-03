@@ -3,6 +3,8 @@ import {
   StreamClient,
   BaseClient,
   type RobotClient,
+  SensorClient,
+  MovementSensorClient,
 } from "@viamrobotics/sdk";
 
 export interface RobotCredentials {
@@ -51,6 +53,18 @@ export const getStreamClient = (client: RobotClient): StreamClient => {
  */
 export const getBaseClient = (client: RobotClient): BaseClient => {
   return new BaseClient(client, "viam_base");
+};
+
+/**
+ * SensorClient factory
+ *
+ * @param client A connected RobotClient
+ * @returns A connected sensor client
+ */
+export const getGPSMovementSensorClient = (
+  client: RobotClient
+): MovementSensorClient => {
+  return new MovementSensorClient(client, "gps-NMEA");
 };
 
 /**

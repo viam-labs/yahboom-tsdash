@@ -14,6 +14,9 @@ import {
 } from "@tremor/react";
 import { useStore, useStream } from "../state";
 import VideoStream from "./VideoStream";
+import GPSLocation from "./GPSLocation";
+import { GetPositionResponse } from "@viamrobotics/sdk";
+import { GPSPos } from "./GPSLocation";
 
 const demo_robot = {
   name: "Demo Rover",
@@ -21,7 +24,7 @@ const demo_robot = {
   secret: process.env.REACT_APP_DEMO_BOT_SECRET!,
 };
 
-export default function ViamDashboard() {
+const ViamDashboard = () => {
   async function fetchData() {
     const response = await fetch(process.env.REACT_APP_PYTHON_HTTP_API_URL!, {
       method: "POST",
@@ -74,6 +77,7 @@ export default function ViamDashboard() {
   }
 
   useEffect(() => {
+    // get historical sensor data
     fetchData().then((data) => {
       let initialTimestamp = new Date();
       let interval = 100000; // 1 second
@@ -98,7 +102,8 @@ export default function ViamDashboard() {
     });
   }, []);
 
-  const { status, connectOrDisconnect, streamClient } = useStore();
+  const { status, connectOrDisconnect, streamClient, gpsMovementSensorClient } =
+    useStore();
 
   const handleConnectButton = () => {
     const demoRobotCredentials = {
@@ -108,7 +113,35 @@ export default function ViamDashboard() {
     connectOrDisconnect(demoRobotCredentials);
   };
 
-  const stream = useStream(streamClient, "cam");
+  const webcam_stream = useStream(streamClient, "cam");
+  const realsense_stream = useStream(streamClient, "realsense-camera");
+
+  const [gpsPosition, setGpsPosition] = useState<GPSPos | null>(null);
+
+  useEffect(() => {
+    gpsMovementSensorClient
+      ?.getPosition()
+      .then((data) => {
+        console.log("callback 2!");
+        console.log(data);
+        //@ts-ignore
+        setGpsPosition({
+          altitudeM: data.altitudeM,
+          coordinate: {
+            latitude: data?.coordinate?.latitude!,
+            longitude: data?.coordinate?.longitude!,
+          },
+        });
+        return data;
+      })
+      .catch((err) => {
+        console.log("error 2!");
+        console.log(err);
+      });
+
+    console.log("gpsPosition");
+    console.log(gpsPosition);
+  }, [status]);
 
   return (
     <main>
@@ -156,20 +189,41 @@ export default function ViamDashboard() {
         </TabList>
         <TabPanels>
           <TabPanel>
-            <div className="mt-6 flex space-x-8">
-              {stream && (
-                <Card>
-                  <>
-                    <Title>Video Stream</Title>
-                    <VideoStream stream={stream} className="rounded-sm" />
-                  </>
+            <div className="mt-6 flex space-x-8 h-full w-full">
+              {webcam_stream && (
+                <Card className="mt-8">
+                  <Title className="absolute -top-10 -left-0">
+                    Webcam Stream
+                  </Title>
+                  <VideoStream stream={webcam_stream} className="rounded-sm" />
                 </Card>
               )}
-              <Card>
-                <>
-                  <Title>Live Data</Title>
-                </>
-              </Card>
+              {realsense_stream && (
+                <Card className="mt-8">
+                  <Title className="absolute -top-10 -left-0">
+                    Realsense Stream
+                  </Title>
+                  <VideoStream
+                    stream={realsense_stream}
+                    className="rounded-sm"
+                  />
+                </Card>
+              )}
+              {gpsPosition && (
+                <Card className="mt-8">
+                  {/** have to do this absolute positioning hack bc
+                   * title rendering is weird w/ the map component.
+                   *
+                   * for consistency sake, doing it w above as well
+                   *
+                   */}
+                  <Title className="absolute -top-10 -left-0">
+                    GPS Position
+                  </Title>
+
+                  <GPSLocation gpsPosition={gpsPosition} />
+                </Card>
+              )}
             </div>
           </TabPanel>
           <TabPanel>
@@ -212,4 +266,6 @@ export default function ViamDashboard() {
       </TabGroup>
     </main>
   );
-}
+};
+
+export default ViamDashboard;

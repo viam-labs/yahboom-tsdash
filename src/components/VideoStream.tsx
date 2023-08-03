@@ -20,7 +20,7 @@ const VideoStream: FC<VideoStreamProps> = (props): JSX.Element => {
     <div
       className={`${
         props.className ? props.className : ""
-      } relative inline-flex p-4`}
+      } relative inline-flex rounded-md overflow-hidden`}
     >
       <video ref={videoRef} autoPlay muted />
       {children}

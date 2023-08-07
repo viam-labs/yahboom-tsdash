@@ -81,22 +81,22 @@ const OSModuleDash: FC<OSModuleDashProps> = (props) => {
       },
       wifi: {
         interface: "wlan0",
-        essid: wlanLine.split('ESSID:"')[1]?.split('"')[0] || "",
-        quality: wlanLine.split("Link Quality=")[1]?.split(" ")[0] || "",
-        signalLevel: wlanLine.split("Signal level=")[1]?.split(" ")[0] || "",
-        protocol: wlanLine.split("IEEE ")[1]?.split(" ")[0] || "",
-        bitRate: wlanLine.split("Bit Rate=")[1]?.split(" ")[0] || "",
-        powerManagement: wlanLine.includes("Power Management:on")
+        essid: wlanLine?.split('ESSID:"')[1]?.split('"')[0] || "",
+        quality: wlanLine?.split("Link Quality=")[1]?.split(" ")[0] || "",
+        signalLevel: wlanLine?.split("Signal level=")[1]?.split(" ")[0] || "",
+        protocol: wlanLine?.split("IEEE ")[1]?.split(" ")[0] || "",
+        bitRate: wlanLine?.split("Bit Rate=")[1]?.split(" ")[0] || "",
+        powerManagement: wlanLine?.includes("Power Management:on")
           ? "on"
           : "off",
       },
       uptime: {
-        currentTime: uptimeLine[0].trim().split(" up ")[0],
-        upTime: uptimeLine[0].trim().split(" up ")[1],
+        currentTime: uptimeLine[0]?.trim()?.split(" up ")[0],
+        upTime: uptimeLine[0]?.trim()?.split(" up ")[1],
         loadAverage: uptimeLine[2]
-          .trim()
-          .split("load average: ")[1]
-          .split(", "),
+          ?.trim()
+          ?.split("load average: ")[1]
+          ?.split(", "),
       },
     };
   }
@@ -164,7 +164,7 @@ const OSModuleDash: FC<OSModuleDashProps> = (props) => {
           </Text>
           <Text>Current Time: {parsedData.uptime.currentTime}</Text>
           <Text>Up Time: {parsedData.uptime.upTime}</Text>
-          <Text>Load Average: {parsedData.uptime.loadAverage.join(", ")}</Text>
+          <Text>Load Average: {parsedData.uptime.loadAverage?.join(", ")}</Text>
         </Card>
         {/* You can add more cards for other data as needed. */}
       </Grid>

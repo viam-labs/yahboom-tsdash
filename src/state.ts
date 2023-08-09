@@ -11,7 +11,7 @@ import {
   RobotCredentials,
   getRobotClient,
   getStreamClient,
-  getGPSMovementSensorClient,
+  getIMUMovementSensorClient,
   getBaseClient,
   getOSStatsSensorClient,
 } from "./client";
@@ -22,7 +22,7 @@ export interface Store {
   status: ClientStatus;
   client?: RobotClient;
   streamClient?: StreamClient;
-  gpsMovementSensorClient?: MovementSensorClient;
+  imuMovementSensorClient?: MovementSensorClient;
   osStatsSensorClient?: SensorClient;
   baseClient?: BaseClient;
   connectOrDisconnect: (credentials: RobotCredentials) => unknown;
@@ -33,7 +33,7 @@ export const useStore = create<Store>((set, get) => ({
   client: undefined,
   streamClient: undefined,
   baseClient: undefined,
-  gpsMovementSensorClient: undefined,
+  imuMovementSensorClient: undefined,
   osStatsSensorClient: undefined,
   connectOrDisconnect: (credentials: RobotCredentials) => {
     const status = get().status;
@@ -63,10 +63,10 @@ export const useStore = create<Store>((set, get) => ({
             `Received base client ${JSON.stringify(baseClient, null, 2)}`
           );
 
-          const gpsMovementSensorClient = getGPSMovementSensorClient(client);
+          const imuMovementSensorClient = getIMUMovementSensorClient(client);
           console.log(
             `Received sensor client ${JSON.stringify(
-              gpsMovementSensorClient,
+              imuMovementSensorClient,
               null,
               2
             )}`
@@ -84,7 +84,7 @@ export const useStore = create<Store>((set, get) => ({
           const stateUpdate = {
             status: "connected",
             client,
-            gpsMovementSensorClient,
+            imuMovementSensorClient,
             osStatsSensorClient,
             baseClient,
             streamClient,

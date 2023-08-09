@@ -61,10 +61,10 @@ export const getBaseClient = (client: RobotClient): BaseClient => {
  * @param client A connected RobotClient
  * @returns A connected sensor client
  */
-export const getGPSMovementSensorClient = (
+export const getIMUMovementSensorClient = (
   client: RobotClient
 ): MovementSensorClient => {
-  return new MovementSensorClient(client, "gps-NMEA");
+  return new MovementSensorClient(client, "imu");
 };
 
 /**

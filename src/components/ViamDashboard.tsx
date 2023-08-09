@@ -14,99 +14,28 @@ import {
 } from "@tremor/react";
 import { useStore, useStream } from "../state";
 import VideoStream from "./VideoStream";
-import GPSLocation from "./GPSLocation";
-import { GetPositionResponse } from "@viamrobotics/sdk";
-import { GPSPos } from "./GPSLocation";
 import OSModuleDash from "./OSModuleDash";
+import IMUSensorReadings from "./IMUSensorReadings";
+
+interface IMUReading {
+  x: number;
+  y: number;
+  z: number;
+}
 
 const demo_robot = {
-  name: "Demo Rover",
-  hostname: process.env.REACT_APP_DEMO_BOT_HOSTNAME!,
-  secret: process.env.REACT_APP_DEMO_BOT_SECRET!,
+  name: "Yahboomt",
+  hostname: process.env.REACT_APP_BOT_HOSTNAME!,
+  secret: process.env.REACT_APP_BOT_SECRET!,
 };
 
 const ViamDashboard = () => {
-  async function fetchData() {
-    const response = await fetch(process.env.REACT_APP_PYTHON_HTTP_API_URL!, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        date_start: "2023-07-26 00:00:00",
-        date_end: "2023-07-28 00:00:00",
-        component_name: "wifi-sensor",
-      }),
-    });
-
-    // Recommendation: handle errors
-    if (!response.ok) {
-      // This will activate the closest `error.js` Error Boundary
-      throw new Error("Failed to fetch data");
-    }
-
-    return await response.json();
-  }
-
-  interface FakeHistoricalData {
-    timestamp: string;
-    linkReading: string;
-    levelReading: string;
-    noiseReading: string;
-  }
-
-  const [data, setData] = useState<FakeHistoricalData[]>();
-
-  interface InputReadingsArray {
-    ReadingName: string;
-    Reading: string;
-  }
-
-  function parseReadings(readingsArray: InputReadingsArray[]) {
-    const readings: Record<string, string> = {};
-
-    readingsArray.forEach((readingObj) => {
-      // Capitalize the reading names
-      const readingName =
-        readingObj.ReadingName.charAt(0).toUpperCase() +
-        readingObj.ReadingName.slice(1) +
-        " Reading";
-      readings[readingName] = readingObj.Reading;
-    });
-
-    return readings;
-  }
-
-  useEffect(() => {
-    // get historical sensor data
-    fetchData().then((data) => {
-      let initialTimestamp = new Date();
-      let interval = 100000; // 1 second
-
-      let flattenedData: any[] = []; // Replace any with your appropriate interface
-      //@ts-ignore
-      data.forEach((item) => {
-        const readings = parseReadings(item.Readings);
-        let readingTimestamp = new Date(initialTimestamp.getTime());
-
-        flattenedData.push({
-          timestamp: readingTimestamp.toISOString(),
-          ...readings,
-        });
-
-        initialTimestamp = new Date(initialTimestamp.getTime() + interval);
-      });
-
-      setData(flattenedData);
-    });
-  }, []);
-
   const {
     status,
     connectOrDisconnect,
     streamClient,
-    gpsMovementSensorClient,
-    osStatsSensorClient,
+    imuMovementSensorClient,
+    // osStatsSensorClient,
   } = useStore();
 
   const handleConnectButton = () => {
@@ -117,38 +46,34 @@ const ViamDashboard = () => {
     connectOrDisconnect(demoRobotCredentials);
   };
 
-  const webcam_stream = useStream(streamClient, "cam");
-  const realsense_stream = useStream(streamClient, "realsense-camera");
+  const cam1_component_name = "mlcamera";
+  const cam1_stream = useStream(streamClient, cam1_component_name);
+  const cam2_component_name = "roscam";
+  const cam2_stream = useStream(streamClient, cam2_component_name);
 
-  const [gpsPosition, setGpsPosition] = useState<GPSPos | null>(null);
-  const [osStats, setOsStats] = useState<any | null>(null);
+  const [imuData, setImuData] = useState<IMUReading | null>(null);
+  // const [osStats, setOsStats] = useState<any | null>(null);
 
   useEffect(() => {
-    gpsMovementSensorClient
-      ?.getPosition()
+    imuMovementSensorClient
+      ?.getAngularVelocity()
       .then((data) => {
         //@ts-ignore
-        setGpsPosition({
-          altitudeM: data.altitudeM,
-          coordinate: {
-            latitude: data?.coordinate?.latitude!,
-            longitude: data?.coordinate?.longitude!,
-          },
-        });
-        return data;
+        setImuData({ ...data });
+        return;
       })
       .catch((err) => {
-        console.log("error in getting gps position");
+        console.log("error in getting IMU Data");
         console.log(err);
       });
   }, [status]);
 
-  useEffect(() => {
-    osStatsSensorClient?.getReadings().then((data) => {
-      console.log(JSON.stringify(data, null, 2));
-      setOsStats(data);
-    });
-  }, [osStatsSensorClient]);
+  // useEffect(() => {
+  //   osStatsSensorClient?.getReadings().then((data) => {
+  //     console.log(JSON.stringify(data, null, 2));
+  //     setOsStats(data);
+  //   });
+  // }, [osStatsSensorClient]);
 
   return (
     <main>
@@ -192,31 +117,19 @@ const ViamDashboard = () => {
       <TabGroup className="mt-6">
         <TabList>
           <Tab>Live Data</Tab>
-          <Tab>Historical Data</Tab>
         </TabList>
         <TabPanels>
           <TabPanel>
             <div className="mt-6 flex space-x-8 h-full w-full">
-              {webcam_stream && (
-                <Card className="mt-8 ">
-                  <Title className="absolute -top-10 -left-0">
-                    Webcam Stream
-                  </Title>
-                  <VideoStream stream={webcam_stream} className="rounded-sm" />
-                </Card>
-              )}
-              {realsense_stream && (
+              {cam2_stream && (
                 <Card className="mt-8">
                   <Title className="absolute -top-10 -left-0">
-                    Realsense Stream
+                    Camera Stream
                   </Title>
-                  <VideoStream
-                    stream={realsense_stream}
-                    className="rounded-sm"
-                  />
+                  <VideoStream stream={cam2_stream} className="rounded-sm" />
                 </Card>
               )}
-              {gpsPosition && (
+              {imuData && (
                 <Card className="mt-8">
                   {/** have to do this absolute positioning hack bc
                    * title rendering is weird w/ the map component.
@@ -225,53 +138,16 @@ const ViamDashboard = () => {
                    *
                    */}
                   <Title className="absolute -top-10 -left-0">
-                    GPS Position
+                    Angular Velocity (IMU Readings)
                   </Title>
 
-                  <GPSLocation gpsPosition={gpsPosition} />
+                  <IMUSensorReadings imuReadings={imuData} />
                 </Card>
               )}
             </div>
-            <div className="mt-4">
+            {/* <div className="mt-4">
               <OSModuleDash osData={osStats} />
-            </div>
-          </TabPanel>
-
-          <TabPanel>
-            <Grid numItemsMd={2} numItemsLg={3} className="gap-6 mt-6">
-              <Card>
-                <Title>Average Link Reading</Title>
-                <Metric className="text-blue-400">56</Metric>
-              </Card>
-              <Card>
-                <Title>Average Level Reading</Title>
-                <Metric>-53</Metric>
-              </Card>
-              <Card>
-                <Title>Average Noise Reading</Title>
-                <Metric>-256</Metric>
-              </Card>
-            </Grid>
-            {data && (
-              <div className="mt-6">
-                <Card>
-                  <Title>Wifi Sensor Data</Title>
-                  <LineChart
-                    className="mt-6"
-                    data={data}
-                    index="timestamp"
-                    categories={[
-                      "Level Reading",
-                      "Link Reading",
-                      "Noise Reading",
-                    ]}
-                    colors={["emerald", "blue", "orange"]}
-                    // valueFormatter={dataFormatter}
-                    yAxisWidth={40}
-                  />
-                </Card>
-              </div>
-            )}
+            </div> */}
           </TabPanel>
         </TabPanels>
       </TabGroup>
